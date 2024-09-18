@@ -13,54 +13,29 @@ using namespace std;
 #define BOTTOMRIGHT x + 1, y - 1
 #define BOTTOMLEFT x - 1, y - 1
 
-bool occupied(int x, int y, bool(*vis)[7][7]) {
-  return (*vis)[x][y] or x > 6 or y > 6 or x < 0 or y < 0;
+bool occupied(int x, int y, bool(&vis)[7][7]) {
+  return vis[x][y] || x > 6 || y > 6 || x < 0 || y < 0;
 }
 
-bool fork(int x, int y, bool(*vis)[7][7]) {
-  return (
-    occupied(UP, vis) && occupied(DOWN, vis) && !occupied(LEFT, vis) && !occupied(RIGHT, vis) ||
-    !occupied(UP, vis) && !occupied(DOWN, vis) && occupied(LEFT, vis) && occupied(RIGHT, vis)
-  );
+bool occupied_raw(int x, int y, bool(&vis)[7][7]) {
+  return vis[x][y] || x > 6 || y > 6 || x < 0 || y < 0;
 }
 
-bool corner_fork(int x, int y, bool(*vis)[7][7]) {
-  return (
-    !occupied(UP, vis) && !occupied(RIGHT, vis) && occupied(TOPRIGHT, vis) ||
-    !occupied(UP, vis) && !occupied(LEFT, vis) && occupied(TOPLEFT, vis) ||
-    !occupied(DOWN, vis) && !occupied(RIGHT, vis) && occupied(BOTTOMRIGHT, vis) ||
-    !occupied(DOWN, vis) && !occupied(LEFT, vis) && occupied(BOTTOMLEFT, vis)
-  );
-}
+int solve(int x, int y, int i, string s, bool(&vis)[7][7]) { 
+  bool up = occupied(UP, vis); 
+  bool down = occupied(DOWN, vis); 
+  bool right = occupied(RIGHT, vis); 
+  bool left = occupied(LEFT, vis); 
 
-//void print_grid(int x, int y, bool(*vis)[7][7]) {
-//  for (int i = 0; i < 7; i++) {
-//    for (int j = 0; j < 7; j++) {
-//      if ((*vis)[i][j]) {
-//        cout << "*";
-//      } else if (j == y && i == x) {
-//        cout << "x";
-//      } else {
-//        cout << " ";
-//      }
-//    }
-//    cout << "\n";
-//  }
-//  cout << x << "\n";
-//  cout << y << "\n";
-//  cout << "grid\n";
-//}
+  if (
+    (up && down && !left && !right) ||
+    (!up && !down && left && right) ||
 
-int solve(int x, int y, int i, string s, bool(*vis)[7][7]) {
-  if (occupied(x, y, vis)) {
-    return 0;
-  }
-  
-  if (fork(x, y, vis)) {
-    return 0;
-  }
-  
-  if (corner_fork(x, y, vis)) {
+    !up && !right && occupied_raw(TOPRIGHT, vis) ||
+    !up && !left && occupied_raw(TOPLEFT, vis) ||
+    !down && !right && occupied_raw(BOTTOMRIGHT, vis) ||
+    !down && !left && occupied_raw(BOTTOMLEFT, vis)
+  ) {
     return 0;
   }
 
@@ -71,25 +46,40 @@ int solve(int x, int y, int i, string s, bool(*vis)[7][7]) {
     return 0;
   }
 
-  (*vis)[x][y] = true;
+  vis[x][y] = true;
   
   char dir = s[i];
   int paths = 0;
-  
-  if (dir == 'U' || dir == '?') {
-    paths += solve(UP, i+1, s, vis);
+
+  switch (dir) {
+    case 'U':
+      if (!up)
+        paths += solve(UP, i+1, s, vis);
+      break;
+    case 'D': 
+      if (!down)
+        paths += solve(DOWN, i+1, s, vis);
+      break;
+    case 'R': 
+      if (!right)
+        paths += solve(RIGHT, i+1, s, vis);
+      break;
+    case 'L': 
+      if (!left)
+        paths += solve(LEFT, i+1, s, vis);
+      break;
+    case '?':
+      if (!up)
+        paths += solve(UP, i+1, s, vis);
+      if (!down)
+        paths += solve(DOWN, i+1, s, vis);
+      if (!right)
+        paths += solve(RIGHT, i+1, s, vis);
+      if (!left)
+        paths += solve(LEFT, i+1, s, vis);
   }
-  if (dir == 'D' || dir == '?') {
-    paths += solve(DOWN, i+1, s, vis);
-  }
-  if (dir == 'R' || dir == '?') {
-    paths += solve(RIGHT, i+1, s, vis);
-  }
-  if (dir == 'L' || dir == '?') {
-    paths += solve(LEFT, i+1, s, vis);
-  } 
-  
-  (*vis)[x][y] = false;
+   
+  vis[x][y] = false;
 
   return paths;
 }
@@ -108,7 +98,7 @@ int main() {
   string s;
   getline(cin, s);
 
-  int paths = solve(0, 6, 0, s, &vis);
+  int paths = solve(0, 6, 0, s, vis);
 
   cout << paths << "\n";
 }
