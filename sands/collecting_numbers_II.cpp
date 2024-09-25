@@ -1,11 +1,51 @@
+//Incomplete
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
-int swap(const vector<pair<int, int>> paths, int a, int b) {
+int swap(vector<pair<int, int>> paths, int a, int b) {
+  int old = 0;
+
+  if (a > 0 && paths[a - 1].second > paths[a].second) {
+    old += 1;
+  }
+  if (a < paths.size() - 2 && paths[a + 1].second < paths[a].second) {
+    old += 1;
+  }
+  if (b > 0 && paths[b - 1].second > paths[b].second) {
+    old += 1;
+  }
+  if (b < paths.size() - 2 && paths[b + 1].second < paths[b].second) {
+    old += 1;
+  }
+
+  cout << old << ' ';
+
+  int temp = paths[a].second;
+  paths[a].second = paths[b].second;
+  paths[b].second = temp;
+
+  int new_ = 0;
+
+  if (a > 0 && paths[a - 1].second > paths[a].second) {
+    new_ += 1;
+  }
+  if (a < paths.size() - 2 && paths[a + 1].second < paths[a].second) {
+    new_ += 1;
+  }
+  if (b > 0 && paths[b - 1].second > paths[b].second) {
+    new_ += 1;
+  }
+  if (b < paths.size() - 2 && paths[b + 1].second < paths[b].second) {
+    new_ += 1;
+  }
   
+  cout << new_ << '\n';
+
+  return new_ - old;
 }
 
 int main() {
@@ -36,8 +76,21 @@ int main() {
     int a, b;
     scanf("%d %d", &a, &b);
 
-    total_paths += swap(paths, a-1, b-1);
+    int affinity = swap(paths, a-1, b-1);
 
+    for (int j = 0; j < paths.size(); j++) {
+      cout << paths[j].second << ' ';
+    }
+    cout << '\n';
+    
+    for (int j = 0; j < paths.size(); j++) {
+      cout << paths[j].first << ' ';
+    }
+    cout << '\n';
+
+    total_paths += affinity;
+
+    cout << affinity << '\n';
     cout << total_paths << '\n';
   }
 
